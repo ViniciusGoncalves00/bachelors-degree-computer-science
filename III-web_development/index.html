@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="stylesheet" href="style.css" />
+    <title>UNINTER - Vinicius Gonçalves</title>
+  </head>
+  <body>
+    <header id="header" class="terminal-header">
+      <nav>
+        <a href="#home">> cd /home</a>
+        <a href="#about">> cd /about</a>
+        <a href="#education">> cd /education</a>
+        <a href="#projects">> cd /portfolio</a>
+        <a href="#contact">> cd /contact</a>
+      </nav>
+    </header>
+
+    <main class="terminal-main">
+      <canvas id="matrix"></canvas>
+
+      <section id="home">
+        <h2>/home</h2>
+        <p>Hi! This is a page for the Bachelor's Degree in Computer Science, for the Web Development discipline.</p>
+      </section>
+      <section id="about">
+        <h2>/about</h2>
+        <p>I`m a brazilian developer</p>
+      </section>
+      <section id="education">
+        <h2>/education</h2>
+        <p>2024 - 2028 | Graduation Lato Sensu | Computer Science | UNINTER</p>
+        <p>2023 - 2023 | Postgraduate Lato Sensu | Interior Architecture and Lightning Design | UNINTER</p>
+        <p>2018 - 2022 | Graduation Lato Sensu | Architecture and Urbanism | UNIFACEAR</p>
+      </section>
+      <section id="projects">
+        <h2>/projects</h2>
+        <a target="_blank" href="https://viniciusgoncalves00.github.io/ViniciusGoncalves00/">> portfolio</a>
+        <a target="_blank" href="https://viniciusgoncalves00.github.io/open-3D/">> open-3D</a>
+        <a target="_blank" href="https://viniciusgoncalves00.github.io/boids-threejs/">> boids</a>
+      </section>
+      <section id="contact">
+        <h2>/contact</h2>
+        <form class="contact-form" action="https://example.com/" method="POST">
+          <h2>Contact</h2>
+          <label for="name">Name:</label>
+          <input type="text" id="name" name="name" required />
+
+          <label for="email">Email:</label>
+          <input type="email" id="email" name="email" required />
+
+          <label for="message">Message:</label>
+          <textarea id="message" name="message" rows="5" required></textarea>
+
+          <button type="submit">Send</button>
+        </form>
+      </section>
+    </main>
+
+    <footer class="terminal-footer">
+      <p>> exit</p>
+    </footer>
+
+    <!-- script to render background -->
+    <script>
+      const canvas = document.getElementById("matrix");
+      const canvas_2d = canvas.getContext("2d");
+
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      const letters = "abcdefghijklmnopqrstuvwxyz";
+      const fontSize = 14;
+      const columns = canvas.width / fontSize;
+
+      const drops = Array(Math.floor(columns)).fill(1);
+
+      function draw() {
+        canvas_2d.fillStyle = "rgba(0, 0, 0, 0.05)";
+        canvas_2d.fillRect(0, 0, canvas.width, canvas.height);
+
+        canvas_2d.fillStyle = "#0f0";
+        canvas_2d.font = fontSize + "px monospace";
+        canvas_2d.globalAlpha = 0.3;
+
+        for (let i = 0; i < drops.length; i++) {
+          const text = letters.charAt(Math.floor(Math.random() * letters.length));
+          canvas_2d.fillText(text, i * fontSize, drops[i] * fontSize);
+        
+          if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+            drops[i] = 0;
+          }
+        
+          drops[i]++;
+        }
+      
+        canvas_2d.globalAlpha = 1;
+      }
+
+      setInterval(draw, 35);
+
+      window.addEventListener('resize', () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      });
+    </script>
+  </body>
+</html>
