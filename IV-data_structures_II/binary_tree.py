@@ -3,17 +3,12 @@ class Person:
         self.name = name
         self.age = age
 
-    def __repr__(self):
-        return f"{self.name} ({self.age})"
-
-
 class Node:
     def __init__(self, person: Person):
         self.person = person
         self.parent = None
         self.left = None
         self.right = None
-
 
 class BinaryTree:
     def __init__(self):
@@ -99,51 +94,6 @@ class BinaryTree:
 
             print(f"Age: {node.person.age} Name: {node.person.name}")
             
-    def print_horizontal(self, node: Node | None = None, prefix: str = "", is_left: bool = True):
-        if node is None:
-            node = self.root
-
-        if node is not None:
-            if node.right:
-                self.print_horizontal(node.right, prefix + ("│   " if is_left else "    "), False)
-
-            print(prefix + ("└── " if is_left else "┌── ") + str(node.person))
-
-            if node.left:
-                self.print_horizontal(node.left, prefix + ("    " if is_left else "│   "), True)
-                
-    def print_vertical(self):
-        if self.root is None:
-            print("Empty tree.")
-            return
-
-        from collections import deque
-
-        queue = deque([(self.root, 0)])
-        levels: list[list[str]] = []
-
-        while queue:
-            node, level = queue.popleft()
-
-            if len(levels) <= level:
-                levels.append([])
-
-            levels[level].append(str(node.person))
-
-            if node.left:
-                queue.append((node.left, level + 1))
-
-            if node.right:
-                queue.append((node.right, level + 1))
-
-        height = len(levels)
-        max_width = 2 ** height
-
-        for i, level in enumerate(levels):
-            spacing = max_width // (2 ** (i + 1))
-            line = (" " * spacing).join(level)
-            print(" " * spacing + line)
-            
     def inorder_reverse(self, node: Node | None = None):
         if node is None:
             node = self.root
@@ -152,7 +102,7 @@ class BinaryTree:
             if node.right:
                 self.inorder_reverse(node.right)
 
-            print(node.person)
+            print(f"Age: {node.person.age} Name: {node.person.name}")
 
             if node.left:
                 self.inorder_reverse(node.left)
@@ -168,7 +118,7 @@ class BinaryTree:
 
         while queue:
             node = queue.popleft()
-            print(node.person)
+            print(f"Age: {node.person.age} Name: {node.person.name}")
 
             if node.left:
                 queue.append(node.left)
