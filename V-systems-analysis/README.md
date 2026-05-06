@@ -1,3 +1,3 @@
 #### Systems Analysis
 
-Assignments, exercises, and other materials related to the Systems Analysis discipline.
+Assignments, exercises, and other materials related to the Systems Analysis course.
