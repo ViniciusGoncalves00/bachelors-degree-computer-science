@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual Environment
+.venv/
+venv/
+env/
+
+# Build / Distribution
+build/
+dist/
+*.spec
+
+# PyInstaller
+*.manifest
+*.log
+
+# Coverage / Testing
+.coverage
+htmlcov/
+.pytest_cache/
+
+# IDEs
+.vscode/
+.idea/
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# UV
+uv.lock
+
+# Environment Variables
+.env
+
+# Temporary Files
+*.tmp
+*.bak
+
+# PyGame
+*.save
+
+# Logs
+logs/
+*.log
