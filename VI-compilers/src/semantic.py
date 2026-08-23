@@ -1,25 +1,68 @@
 from expressions import *
 
 class Symbol:
-    def __init__(self, name, type):
+
+    def __init__(
+        self,
+        name,
+        type,
+        address,
+        scope
+    ):
         self.name = name
         self.type = type
+        self.address = address
+        self.scope = scope
 
     def __repr__(self):
-        return f"Symbol({self.name}, {self.type})"
+
+        return (
+            f"Symbol("
+            f"name={self.name}, "
+            f"type={self.type}, "
+            f"address={self.address}, "
+            f"scope={self.scope}"
+            f")"
+        )
 
 
 class SymbolTable:
+
     def __init__(self):
+
         self.symbols = {}
 
-    def define(self, name, symbol):
+        self.next_address = 0
+
+    def define(self, name, type, scope="global"):
+
+        if name in self.symbols:
+
+            symbol = self.symbols[name]
+
+            symbol.type = type
+
+            return symbol
+
+        symbol = Symbol(
+            name,
+            type,
+            self.next_address,
+            scope
+        )
+
         self.symbols[name] = symbol
 
+        self.next_address += 1
+
+        return symbol
+
     def lookup(self, name):
+
         return self.symbols.get(name)
 
     def contains(self, name):
+
         return name in self.symbols
 
 
@@ -164,21 +207,16 @@ class SemanticAnalyzer:
     # ========================================================
 
     def analyze_set(self, expression):
-
-        # Analisa o valor que será atribuído
         value_type = self.analyze_expression(
             expression.value
         )
-
-        # Adiciona/atualiza a variável
+    
         self.symbol_table.define(
             expression.name,
-            Symbol(
-                expression.name,
-                value_type
-            )
+            value_type,
+            "global"
         )
-
+    
         return value_type
 
     # ========================================================
