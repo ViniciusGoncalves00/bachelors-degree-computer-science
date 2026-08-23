@@ -4,6 +4,20 @@ from semantic import SemanticAnalyzer
 from codegen import MEPA
 from report import Report
 
+from tests.test_lexer import test_lexer
+from tests.test_parser import test_parser
+from tests.test_semantic import test_semantic
+
+
+def main():
+    test_lexer()
+    test_parser()
+    test_semantic()
+
+
+if __name__ == "__main__":
+    main()
+
 
 source = """
 (begin
