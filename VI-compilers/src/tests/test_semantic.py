@@ -61,3 +61,36 @@ def test_semantic():
         )
 
     print("==============================")
+    
+def test_semantic_negative():
+
+    source = """
+    (print x)
+    """
+
+    lexer = Lexer(source)
+    tokens = lexer.tokenize()
+
+    parser = Parser(tokens)
+    expressions = parser.parse()
+
+    semantic_analyzer = SemanticAnalyzer()
+
+    print()
+    print("===== TESTE NEGATIVO DO SEMÂNTICO =====")
+
+    try:
+
+        semantic_analyzer.analyze(
+            expressions
+        )
+
+        print(
+            "ERRO: o Semântico deveria "
+            "rejeitar a variável 'x'."
+        )
+
+    except Exception as e:
+
+        print("Erro detectado corretamente:")
+        print(e)

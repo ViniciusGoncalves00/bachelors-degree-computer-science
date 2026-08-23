@@ -4,15 +4,20 @@ from semantic import SemanticAnalyzer
 from codegen import MEPA
 from report import Report
 
-from tests.test_lexer import test_lexer
-from tests.test_parser import test_parser
-from tests.test_semantic import test_semantic
+from tests.test_lexer import *
+from tests.test_parser import *
+from tests.test_semantic import *
 
 
 def main():
     test_lexer()
+    test_lexer_negative()
+
     test_parser()
+    test_parser_negative()
+
     test_semantic()
+    test_semantic_negative()
 
 
 if __name__ == "__main__":

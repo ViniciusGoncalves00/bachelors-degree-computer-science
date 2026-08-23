@@ -37,3 +37,33 @@ def test_parser():
         print(expression.dump())
 
     print("===========================")
+    
+def test_parser_negative():
+
+    # print recebe duas expressões,
+    # mas a gramática permite apenas uma.
+    source = """
+    (print 10 20)
+    """
+
+    lexer = Lexer(source)
+    tokens = lexer.tokenize()
+
+    parser = Parser(tokens)
+
+    print()
+    print("===== TESTE NEGATIVO DO PARSER =====")
+
+    try:
+
+        parser.parse()
+
+        print(
+            "ERRO: o Parser deveria rejeitar "
+            "(print 10 20)."
+        )
+
+    except Exception as e:
+
+        print("Erro detectado corretamente:")
+        print(e)

@@ -37,3 +37,24 @@ def test_lexer():
         )
 
     print("==========================")
+    
+def test_lexer_negative():
+    # @ não pertence à linguagem Mini-Lisp
+    source = """
+    (print @)
+    """
+
+    lexer = Lexer(source)
+
+    print()
+    print("===== TESTE NEGATIVO DO LEXER =====")
+
+    try:
+        lexer.tokenize()
+
+        print("ERRO: o Lexer deveria rejeitar '@'.")
+
+    except Exception as e:
+
+        print("Erro detectado corretamente:")
+        print(e)
