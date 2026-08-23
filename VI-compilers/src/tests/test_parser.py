@@ -40,8 +40,6 @@ def test_parser():
     
 def test_parser_negative():
 
-    # print recebe duas expressões,
-    # mas a gramática permite apenas uma.
     source = """
     (print 10 20)
     """

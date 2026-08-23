@@ -1,4 +1,4 @@
-from expressions import *
+from utils.expressions import *
 
 class Symbol:
 
@@ -71,18 +71,10 @@ class SemanticAnalyzer:
     def __init__(self):
         self.symbol_table = SymbolTable()
 
-    # ========================================================
-    # ENTRY POINT
-    # ========================================================
-
     def analyze(self, expressions):
 
         for expression in expressions:
             self.analyze_expression(expression)
-
-    # ========================================================
-    # EXPRESSIONS
-    # ========================================================
 
     def analyze_expression(self, expression):
 
@@ -114,10 +106,6 @@ class SemanticAnalyzer:
             f"Expressão desconhecida: {expression}"
         )
 
-    # ========================================================
-    # IDENTIFIER
-    # ========================================================
-
     def analyze_identifier(self, expression):
 
         symbol = self.symbol_table.lookup(
@@ -133,10 +121,6 @@ class SemanticAnalyzer:
 
         return symbol.type
 
-    # ========================================================
-    # BINARY
-    # ========================================================
-
     def analyze_binary(self, expression):
 
         left_type = self.analyze_expression(
@@ -149,7 +133,6 @@ class SemanticAnalyzer:
 
         operator = expression.operator
 
-        # Operações aritméticas
         if operator in (
             "+",
             "-",
@@ -173,7 +156,6 @@ class SemanticAnalyzer:
 
             return "number"
 
-        # Operações relacionais
         if operator in (
             ">",
             ">=",
@@ -202,10 +184,6 @@ class SemanticAnalyzer:
             f"operador '{operator}' desconhecido."
         )
 
-    # ========================================================
-    # SET
-    # ========================================================
-
     def analyze_set(self, expression):
         value_type = self.analyze_expression(
             expression.value
@@ -219,22 +197,13 @@ class SemanticAnalyzer:
     
         return value_type
 
-    # ========================================================
-    # PRINT
-    # ========================================================
-
     def analyze_print(self, expression):
 
-        # A expressão precisa ser válida.
         self.analyze_expression(
             expression.value
         )
 
         return "void"
-
-    # ========================================================
-    # BEGIN
-    # ========================================================
 
     def analyze_begin(self, expression):
 
@@ -245,10 +214,6 @@ class SemanticAnalyzer:
             )
 
         return "void"
-
-    # ========================================================
-    # IF
-    # ========================================================
 
     def analyze_if(self, expression):
 
@@ -272,10 +237,6 @@ class SemanticAnalyzer:
         )
 
         return "void"
-
-    # ========================================================
-    # WHILE
-    # ========================================================
 
     def analyze_while(self, expression):
 

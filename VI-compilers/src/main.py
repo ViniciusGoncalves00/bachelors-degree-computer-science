@@ -2,7 +2,7 @@ from lexer import Lexer
 from parser import Parser
 from semantic import SemanticAnalyzer
 from codegen import MEPA
-from report import Report
+from utils.report import Report
 
 from tests.test_lexer import *
 from tests.test_parser import *
@@ -27,47 +27,37 @@ if __name__ == "__main__":
 source = """
 (begin
 
-    (set a 10)
-    (set b 20)
+    (set contador 1)
 
-    (print (+ a b))
+    (while (<= contador 5)
 
+        (begin
+
+            (if (>= contador 3)
+                (print (* contador 10))
+                (print contador)
+            )
+
+            (set contador (+ contador 1))
+
+        )
+    )
 )
 """
-
-
-# ============================================================
-# LEXER
-# ============================================================
 
 lexer = Lexer(source)
 
 tokens = lexer.tokenize()
 
-
-# ============================================================
-# PARSER
-# ============================================================
-
 parser = Parser(tokens)
 
 expressions = parser.parse()
-
-
-# ============================================================
-# SEMANTIC ANALYZER
-# ============================================================
 
 semantic_analyzer = SemanticAnalyzer()
 
 semantic_analyzer.analyze(
     expressions
 )
-
-
-# ============================================================
-# CODE GENERATOR
-# ============================================================
 
 generator = MEPA(
     semantic_analyzer.symbol_table
@@ -76,11 +66,6 @@ generator = MEPA(
 code = generator.generate(
     expressions
 )
-
-
-# ============================================================
-# REPORTS
-# ============================================================
 
 Report.print_tokens(tokens)
 

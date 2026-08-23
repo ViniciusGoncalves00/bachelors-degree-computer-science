@@ -1,16 +1,11 @@
+from utils.expressions import *
 from lexer import Lexer, TokenType
-from expressions import *
-
 
 class Parser:
 
     def __init__(self, tokens):
         self.tokens = tokens
         self.current = 0
-
-    # ========================================================
-    # PARSE
-    # ========================================================
 
     def parse(self):
         expressions = []
@@ -21,10 +16,6 @@ class Parser:
             )
 
         return expressions
-
-    # ========================================================
-    # EXPRESSIONS
-    # ========================================================
 
     def expression(self):
         token = self.peek()
@@ -42,20 +33,12 @@ class Parser:
             f"Token inesperado: {token}"
         )
 
-    # ========================================================
-    # NUMBER
-    # ========================================================
-
     def number(self):
         token = self.advance()
 
         return NumberExpression(
             int(token.lexeme)
         )
-
-    # ========================================================
-    # IDENTIFIER
-    # ========================================================
 
     def identifier(self):
         token = self.advance()
@@ -64,10 +47,6 @@ class Parser:
             token.lexeme
         )
 
-    # ========================================================
-    # LIST
-    # ========================================================
-
     def list(self):
 
         self.consume(
@@ -75,17 +54,12 @@ class Parser:
             "Esperado '('."
         )
 
-        # Uma lista não pode terminar imediatamente
         if self.check(TokenType.RPAREN):
             raise Exception(
                 "Lista vazia não é permitida."
             )
 
         operator = self.advance()
-
-        # ----------------------------------------------------
-        # Operações aritméticas
-        # ----------------------------------------------------
 
         if operator.type in (
             TokenType.PLUS,
@@ -97,10 +71,6 @@ class Parser:
                 operator
             )
 
-        # ----------------------------------------------------
-        # Operações relacionais
-        # ----------------------------------------------------
-
         if operator.type in (
             TokenType.GREATER_EQUAL,
             TokenType.GREATER_THAN,
@@ -110,10 +80,6 @@ class Parser:
             return self.binary_expression(
                 operator
             )
-
-        # ----------------------------------------------------
-        # Formas especiais
-        # ----------------------------------------------------
 
         if operator.type == TokenType.IDENTIFIER:
 
@@ -137,10 +103,6 @@ class Parser:
             f"{operator.lexeme}"
         )
 
-    # ========================================================
-    # BINARY
-    # ========================================================
-
     def binary_expression(self, operator):
 
         left = self.expression()
@@ -158,12 +120,6 @@ class Parser:
             right
         )
 
-    # ========================================================
-    # PRINT
-    #
-    # (print expression)
-    # ========================================================
-
     def print_expression(self):
 
         value = self.expression()
@@ -176,12 +132,6 @@ class Parser:
         return PrintExpression(
             value
         )
-
-    # ========================================================
-    # SET
-    #
-    # (set identifier expression)
-    # ========================================================
 
     def set_expression(self):
 
@@ -201,12 +151,6 @@ class Parser:
             name.lexeme,
             value
         )
-
-    # ========================================================
-    # BEGIN
-    #
-    # (begin expression*)
-    # ========================================================
 
     def begin_expression(self):
 
@@ -229,12 +173,6 @@ class Parser:
             expressions
         )
 
-    # ========================================================
-    # IF
-    #
-    # (if condition then else)
-    # ========================================================
-
     def if_expression(self):
 
         condition = self.expression()
@@ -254,12 +192,6 @@ class Parser:
             else_branch
         )
 
-    # ========================================================
-    # WHILE
-    #
-    # (while condition body)
-    # ========================================================
-
     def while_expression(self):
 
         condition = self.expression()
@@ -275,10 +207,6 @@ class Parser:
             condition,
             body
         )
-
-    # ========================================================
-    # TOKEN HELPERS
-    # ========================================================
 
     def peek(self):
         return self.tokens[self.current]

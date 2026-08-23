@@ -7,72 +7,56 @@ from report import Report
 
 def test_compiler(source):
 
-    print()
-    print("=" * 70)
-    print("TESTE DE INTEGRAÇÃO")
-    print("=" * 70)
+    print()
+    print("=" * 70)
+    print("TESTE DE INTEGRAÇÃO")
+    print("=" * 70)
 
-    print()
-    print("CÓDIGO FONTE")
-    print("-" * 70)
-    print(source)
+    print()
+    print("CÓDIGO FONTE")
+    print("-" * 70)
+    print(source)
 
-    # ========================================================
-    # 1. ANÁLISE LÉXICA
-    # ========================================================
+    lexer = Lexer(source)
 
-    lexer = Lexer(source)
+    tokens = lexer.tokenize()
 
-    tokens = lexer.tokenize()
+    print()
+    Report.print_tokens(tokens)
 
-    print()
-    Report.print_tokens(tokens)
+    parser = Parser(tokens)
 
-    # ========================================================
-    # 2. ANÁLISE SINTÁTICA
-    # ========================================================
+    expressions = parser.parse()
 
-    parser = Parser(tokens)
+    print()
+    print("=" * 70)
+    print("ÁRVORE SINTÁTICA ABSTRATA")
+    print("=" * 70)
 
-    expressions = parser.parse()
+    for expression in expressions:
+        print(expression.dump())
 
-    print()
-    print("=" * 70)
-    print("ÁRVORE SINTÁTICA ABSTRATA")
-    print("=" * 70)
+    semantic_analyzer = SemanticAnalyzer()
 
-    for expression in expressions:
-        print(expression.dump())
+    semantic_analyzer.analyze(
+        expressions
+    )
 
-    # ========================================================
-    # 3. ANÁLISE SEMÂNTICA
-    # ========================================================
+    Report.print_symbols(
+        semantic_analyzer.symbol_table
+    )
 
-    semantic_analyzer = SemanticAnalyzer()
+    generator = MEPA(
+        semantic_analyzer.symbol_table
+    )
 
-    semantic_analyzer.analyze(
-        expressions
-    )
+    code = generator.generate(
+        expressions
+    )
 
-    Report.print_symbols(
-        semantic_analyzer.symbol_table
-    )
+    Report.print_code(code)
 
-    # ========================================================
-    # 4. GERAÇÃO DE CÓDIGO
-    # ========================================================
-
-    generator = MEPA(
-        semantic_analyzer.symbol_table
-    )
-
-    code = generator.generate(
-        expressions
-    )
-
-    Report.print_code(code)
-
-    print()
-    print("=" * 70)
-    print("COMPILAÇÃO CONCLUÍDA COM SUCESSO")
-    print("=" * 70)
+    print()
+    print("=" * 70)
+    print("COMPILAÇÃO CONCLUÍDA COM SUCESSO")
+    print("=" * 70)

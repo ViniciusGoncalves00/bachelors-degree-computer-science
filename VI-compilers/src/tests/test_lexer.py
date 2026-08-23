@@ -39,7 +39,6 @@ def test_lexer():
     print("==========================")
     
 def test_lexer_negative():
-    # @ não pertence à linguagem Mini-Lisp
     source = """
     (print @)
     """

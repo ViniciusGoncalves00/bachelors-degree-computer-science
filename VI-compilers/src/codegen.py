@@ -1,4 +1,4 @@
-from expressions import *
+from utils.expressions import *
 
 
 class MEPA:
@@ -9,16 +9,8 @@ class MEPA:
         self.code = []
         self.label_count = 0
 
-    # ========================================================
-    # EMIT
-    # ========================================================
-
     def emit(self, instruction):
         self.code.append(instruction)
-
-    # ========================================================
-    # LABELS
-    # ========================================================
 
     def new_label(self):
         label = f"L{self.label_count}"
@@ -29,20 +21,12 @@ class MEPA:
     def emit_label(self, label):
         self.emit(f"{label}:")
 
-    # ========================================================
-    # GENERATE
-    # ========================================================
-
     def generate(self, expressions):
 
         for expression in expressions:
             self.generate_expression(expression)
 
         return self.code
-
-    # ========================================================
-    # EXPRESSIONS
-    # ========================================================
 
     def generate_expression(self, expression):
 
@@ -74,19 +58,11 @@ class MEPA:
             f"Expressão desconhecida: {expression}"
         )
 
-    # ========================================================
-    # NUMBER
-    # ========================================================
-
     def generate_number(self, expression):
 
         self.emit(
             f"CRCT {expression.value}"
         )
-
-    # ========================================================
-    # IDENTIFIER
-    # ========================================================
 
     def generate_identifier(self, expression):
 
@@ -94,18 +70,12 @@ class MEPA:
             f"CRVL {expression.name}"
         )
 
-    # ========================================================
-    # BINARY
-    # ========================================================
-
     def generate_binary(self, expression):
 
-        # Gera primeiro o lado esquerdo
         self.generate_expression(
             expression.left
         )
 
-        # Depois o lado direito
         self.generate_expression(
             expression.right
         )
@@ -141,10 +111,6 @@ class MEPA:
                 f"Operador desconhecido: {operator}"
             )
 
-    # ========================================================
-    # SET
-    # ========================================================
-
     def generate_set(self, expression):
 
         self.generate_expression(
@@ -154,11 +120,7 @@ class MEPA:
         self.emit(
             f"ARMZ {expression.name}"
         )
-
-    # ========================================================
-    # PRINT
-    # ========================================================
-
+    
     def generate_print(self, expression):
 
         self.generate_expression(
@@ -166,10 +128,6 @@ class MEPA:
         )
 
         self.emit("IMPR")
-
-    # ========================================================
-    # BEGIN
-    # ========================================================
 
     def generate_begin(self, expression):
 
@@ -179,36 +137,27 @@ class MEPA:
                 statement
             )
 
-    # ========================================================
-    # IF
-    # ========================================================
-
     def generate_if(self, expression):
 
         else_label = self.new_label()
         end_label = self.new_label()
 
-        # Calcula condição
         self.generate_expression(
             expression.condition
         )
 
-        # Se falso, vai para ELSE
         self.emit(
             f"DSVF {else_label}"
         )
 
-        # THEN
         self.generate_expression(
             expression.then_branch
         )
 
-        # Pula o ELSE
         self.emit(
             f"DSVS {end_label}"
         )
 
-        # ELSE
         self.emit_label(
             else_label
         )
@@ -217,46 +166,35 @@ class MEPA:
             expression.else_branch
         )
 
-        # Fim
         self.emit_label(
             end_label
         )
-
-    # ========================================================
-    # WHILE
-    # ========================================================
 
     def generate_while(self, expression):
 
         start_label = self.new_label()
         end_label = self.new_label()
 
-        # Início do loop
         self.emit_label(
             start_label
         )
 
-        # Calcula condição
         self.generate_expression(
             expression.condition
         )
 
-        # Se falso, termina
         self.emit(
             f"DSVF {end_label}"
         )
 
-        # Corpo
         self.generate_expression(
             expression.body
         )
 
-        # Volta para o início
         self.emit(
             f"DSVS {start_label}"
         )
 
-        # Fim
         self.emit_label(
             end_label
         )

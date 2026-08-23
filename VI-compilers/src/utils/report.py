@@ -1,9 +1,5 @@
 class Report:
 
-    # ========================================================
-    # ANÁLISE LÉXICA / SINTÁTICA
-    # ========================================================
-
     @staticmethod
     def print_tokens(tokens):
 
@@ -27,10 +23,6 @@ class Report:
                 f"{token.type.name:<20}"
                 f"{token.lexeme}"
             )
-
-    # ========================================================
-    # TABELA DE SÍMBOLOS
-    # ========================================================
 
     @staticmethod
     def print_symbols(symbol_table):
@@ -57,10 +49,6 @@ class Report:
                 f"{symbol.type:<18}"
                 f"{symbol.scope}"
             )
-
-    # ========================================================
-    # CÓDIGO INTERMEDIÁRIO
-    # ========================================================
 
     @staticmethod
     def print_code(code):

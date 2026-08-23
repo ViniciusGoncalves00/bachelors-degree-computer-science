@@ -28,15 +28,12 @@ def test_semantic():
     )
     """
 
-    # Lexer
     lexer = Lexer(source)
     tokens = lexer.tokenize()
 
-    # Parser
     parser = Parser(tokens)
     expressions = parser.parse()
 
-    # Semantic Analyzer
     semantic_analyzer = SemanticAnalyzer()
 
     semantic_analyzer.analyze(
