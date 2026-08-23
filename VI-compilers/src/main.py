@@ -2,7 +2,12 @@ from lexer import Lexer
 from parser import Parser
 from semantic import SemanticAnalyzer
 
-source = "(+ 10 (* x 2))"
+source = """
+(begin
+ (set a 10)
+ (set b 20)
+ (print (+ a b)))
+"""
 
 lexer = Lexer(source)
 tokens = lexer.tokenize()

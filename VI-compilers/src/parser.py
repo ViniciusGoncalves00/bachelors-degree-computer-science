@@ -1,39 +1,16 @@
 from lexer import Lexer, TokenType
+from expressions import *
 
-class NumberExpression:
-    def __init__(self, value):
-        self.value = value
 
-    def __repr__(self):
-        return f"Number({self.value})"
-    
-class IdentifierExpression:
-    def __init__(self, name):
-        self.name = name
-
-    def __repr__(self):
-        return f"Identifier({self.name})"
-    
-class ListExpression:
-    def __init__(self, elements):
-        self.elements = elements
-
-    def __repr__(self):
-        return f"List({self.elements})"
-    
-class BinaryExpression:
-    def __init__(self, operator, left, right):
-        self.operator = operator
-        self.left = left
-        self.right = right
-
-    def __repr__(self):
-        return f"Binary({self.operator}, {self.left}, {self.right})"
-    
 class Parser:
+
     def __init__(self, tokens):
         self.tokens = tokens
         self.current = 0
+
+    # ========================================================
+    # PARSE
+    # ========================================================
 
     def parse(self):
         expressions = []
@@ -44,6 +21,10 @@ class Parser:
             )
 
         return expressions
+
+    # ========================================================
+    # EXPRESSIONS
+    # ========================================================
 
     def expression(self):
         token = self.peek()
@@ -61,12 +42,20 @@ class Parser:
             f"Token inesperado: {token}"
         )
 
+    # ========================================================
+    # NUMBER
+    # ========================================================
+
     def number(self):
         token = self.advance()
 
         return NumberExpression(
             int(token.lexeme)
         )
+
+    # ========================================================
+    # IDENTIFIER
+    # ========================================================
 
     def identifier(self):
         token = self.advance()
@@ -75,42 +64,227 @@ class Parser:
             token.lexeme
         )
 
+    # ========================================================
+    # LIST
+    # ========================================================
+
     def list(self):
+
         self.consume(
             TokenType.LPAREN,
-            "Esperado '('"
+            "Esperado '('."
         )
-    
+
+        # Uma lista não pode terminar imediatamente
+        if self.check(TokenType.RPAREN):
+            raise Exception(
+                "Lista vazia não é permitida."
+            )
+
         operator = self.advance()
-    
-        if operator.type not in (
+
+        # ----------------------------------------------------
+        # Operações aritméticas
+        # ----------------------------------------------------
+
+        if operator.type in (
             TokenType.PLUS,
             TokenType.MINUS,
             TokenType.MULTIPLY,
-            TokenType.DIVIDE
+            TokenType.DIVIDE,
         ):
-            raise Exception(
-                f"Operador inesperado: {operator}"
+            return self.binary_expression(
+                operator
             )
-    
+
+        # ----------------------------------------------------
+        # Operações relacionais
+        # ----------------------------------------------------
+
+        if operator.type in (
+            TokenType.GREATER_EQUAL,
+            TokenType.GREATER_THAN,
+            TokenType.LESS_EQUAL,
+            TokenType.LESS_THAN,
+        ):
+            return self.binary_expression(
+                operator
+            )
+
+        # ----------------------------------------------------
+        # Formas especiais
+        # ----------------------------------------------------
+
+        if operator.type == TokenType.IDENTIFIER:
+
+            if operator.lexeme == "print":
+                return self.print_expression()
+
+            if operator.lexeme == "set":
+                return self.set_expression()
+
+            if operator.lexeme == "begin":
+                return self.begin_expression()
+
+            if operator.lexeme == "if":
+                return self.if_expression()
+
+            if operator.lexeme == "while":
+                return self.while_expression()
+
+        raise Exception(
+            f"Operador ou forma especial desconhecida: "
+            f"{operator.lexeme}"
+        )
+
+    # ========================================================
+    # BINARY
+    # ========================================================
+
+    def binary_expression(self, operator):
+
         left = self.expression()
+
         right = self.expression()
-    
+
         self.consume(
             TokenType.RPAREN,
-            "Esperado ')'"
+            "Esperado ')'."
         )
-    
+
         return BinaryExpression(
-            operator.type,
+            operator.lexeme,
             left,
             right
         )
+
+    # ========================================================
+    # PRINT
+    #
+    # (print expression)
+    # ========================================================
+
+    def print_expression(self):
+
+        value = self.expression()
+
+        self.consume(
+            TokenType.RPAREN,
+            "Esperado ')'."
+        )
+
+        return PrintExpression(
+            value
+        )
+
+    # ========================================================
+    # SET
+    #
+    # (set identifier expression)
+    # ========================================================
+
+    def set_expression(self):
+
+        name = self.consume(
+            TokenType.IDENTIFIER,
+            "Esperado identificador após 'set'."
+        )
+
+        value = self.expression()
+
+        self.consume(
+            TokenType.RPAREN,
+            "Esperado ')'."
+        )
+
+        return SetExpression(
+            name.lexeme,
+            value
+        )
+
+    # ========================================================
+    # BEGIN
+    #
+    # (begin expression*)
+    # ========================================================
+
+    def begin_expression(self):
+
+        expressions = []
+
+        while (
+            not self.check(TokenType.RPAREN)
+            and not self.is_at_end()
+        ):
+            expressions.append(
+                self.expression()
+            )
+
+        self.consume(
+            TokenType.RPAREN,
+            "Esperado ')'."
+        )
+
+        return BeginExpression(
+            expressions
+        )
+
+    # ========================================================
+    # IF
+    #
+    # (if condition then else)
+    # ========================================================
+
+    def if_expression(self):
+
+        condition = self.expression()
+
+        then_branch = self.expression()
+
+        else_branch = self.expression()
+
+        self.consume(
+            TokenType.RPAREN,
+            "Esperado ')'."
+        )
+
+        return IfExpression(
+            condition,
+            then_branch,
+            else_branch
+        )
+
+    # ========================================================
+    # WHILE
+    #
+    # (while condition body)
+    # ========================================================
+
+    def while_expression(self):
+
+        condition = self.expression()
+
+        body = self.expression()
+
+        self.consume(
+            TokenType.RPAREN,
+            "Esperado ')'."
+        )
+
+        return WhileExpression(
+            condition,
+            body
+        )
+
+    # ========================================================
+    # TOKEN HELPERS
+    # ========================================================
 
     def peek(self):
         return self.tokens[self.current]
 
     def advance(self):
+
         token = self.tokens[self.current]
 
         if not self.is_at_end():
@@ -119,16 +293,21 @@ class Parser:
         return token
 
     def check(self, token_type):
+
         if self.is_at_end():
             return False
 
         return self.peek().type == token_type
 
     def consume(self, token_type, message):
+
         if self.check(token_type):
             return self.advance()
 
-        raise Exception(message)
+        raise Exception(
+            message
+        )
 
     def is_at_end(self):
+
         return self.peek().type == TokenType.EOF

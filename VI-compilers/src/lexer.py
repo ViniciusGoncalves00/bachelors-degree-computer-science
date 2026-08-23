@@ -10,6 +10,11 @@ class TokenType(Enum):
     MULTIPLY = auto()
     DIVIDE = auto()
 
+    GREATER_EQUAL = auto()
+    GREATER_THAN = auto()
+    LESS_EQUAL = auto()
+    LESS_THAN = auto()
+
     NUMBER = auto()
     IDENTIFIER = auto()
 
@@ -77,6 +82,20 @@ class Lexer:
 
         elif c.isalpha():
             self.identifier()
+            
+        elif c == '>':
+            if self.peek() == '=':
+                self.advance()
+                self.add_token(TokenType.GREATER_EQUAL)
+            else:
+                self.add_token(TokenType.GREATER_THAN)
+
+        elif c == '<':
+            if self.peek() == '=':
+                self.advance()
+                self.add_token(TokenType.LESS_EQUAL)
+            else:
+                self.add_token(TokenType.LESS_THAN)
 
         else:
             raise Exception(

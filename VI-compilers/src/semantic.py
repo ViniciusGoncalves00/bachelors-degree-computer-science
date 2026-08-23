@@ -1,4 +1,4 @@
-from parser import *
+from expressions import *
 
 class Symbol:
     def __init__(self, name, type):
@@ -28,79 +28,74 @@ class SemanticAnalyzer:
     def __init__(self):
         self.symbol_table = SymbolTable()
 
+    # ========================================================
+    # ENTRY POINT
+    # ========================================================
+
     def analyze(self, expressions):
 
         for expression in expressions:
             self.analyze_expression(expression)
 
+    # ========================================================
+    # EXPRESSIONS
+    # ========================================================
+
     def analyze_expression(self, expression):
+
         if isinstance(expression, NumberExpression):
             return "number"
 
         if isinstance(expression, IdentifierExpression):
             return self.analyze_identifier(expression)
 
-        if isinstance(expression, ListExpression):
-            return self.analyze_list(expression)
-        
         if isinstance(expression, BinaryExpression):
             return self.analyze_binary(expression)
+
+        if isinstance(expression, SetExpression):
+            return self.analyze_set(expression)
+
+        if isinstance(expression, PrintExpression):
+            return self.analyze_print(expression)
+
+        if isinstance(expression, BeginExpression):
+            return self.analyze_begin(expression)
+
+        if isinstance(expression, IfExpression):
+            return self.analyze_if(expression)
+
+        if isinstance(expression, WhileExpression):
+            return self.analyze_while(expression)
 
         raise Exception(
             f"Expressão desconhecida: {expression}"
         )
 
+    # ========================================================
+    # IDENTIFIER
+    # ========================================================
+
     def analyze_identifier(self, expression):
 
-        name = expression.name
-
-        if name in ("+", "-", "*", "/"):
-            return "operator"
-
-        symbol = self.symbol_table.lookup(name)
+        symbol = self.symbol_table.lookup(
+            expression.name
+        )
 
         if symbol is None:
             raise Exception(
                 f"Erro semântico: "
-                f"variável '{name}' não declarada."
+                f"variável '{expression.name}' "
+                f"não declarada."
             )
 
         return symbol.type
 
-    def analyze_list(self, expression):
+    # ========================================================
+    # BINARY
+    # ========================================================
 
-        elements = expression.elements
-
-        if len(elements) == 0:
-            raise Exception(
-                "Erro semântico: lista vazia."
-            )
-
-        first = elements[0]
-
-        if not isinstance(first, IdentifierExpression):
-            raise Exception(
-                "Erro semântico: "
-                "o primeiro elemento da lista "
-                "deve ser um operador."
-            )
-
-        operator = first.name
-
-        if operator == "define":
-            return self.analyze_define(expression)
-
-        if operator in ("+", "-", "*", "/"):
-            return self.analyze_binary_operation(
-                expression
-            )
-
-        raise Exception(
-            f"Erro semântico: "
-            f"operação '{operator}' desconhecida."
-        )
-        
     def analyze_binary(self, expression):
+
         left_type = self.analyze_expression(
             expression.left
         )
@@ -109,87 +104,156 @@ class SemanticAnalyzer:
             expression.right
         )
 
-        if left_type != "number":
-            raise Exception(
-                "Erro semântico: "
-                "operando esquerdo deve ser numérico."
-            )
+        operator = expression.operator
 
-        if right_type != "number":
-            raise Exception(
-                "Erro semântico: "
-                "operando direito deve ser numérico."
-            )
-
-        return "number"
-
-    def analyze_define(self, expression):
-
-        elements = expression.elements
-
-        if len(elements) != 3:
-            raise Exception(
-                "Erro semântico: "
-                "define espera 2 argumentos."
-            )
-
-        name = elements[1]
-        value = elements[2]
-
-        if not isinstance(
-            name,
-            IdentifierExpression
+        # Operações aritméticas
+        if operator in (
+            "+",
+            "-",
+            "*",
+            "/"
         ):
-            raise Exception(
-                "Erro semântico: "
-                "o nome da variável deve "
-                "ser um identificador."
-            )
 
-        value_type = self.analyze_expression(
-            value
+            if left_type != "number":
+                raise Exception(
+                    f"Erro semântico: "
+                    f"operador '{operator}' "
+                    f"espera um número à esquerda."
+                )
+
+            if right_type != "number":
+                raise Exception(
+                    f"Erro semântico: "
+                    f"operador '{operator}' "
+                    f"espera um número à direita."
+                )
+
+            return "number"
+
+        # Operações relacionais
+        if operator in (
+            ">",
+            ">=",
+            "<",
+            "<="
+        ):
+
+            if left_type != "number":
+                raise Exception(
+                    f"Erro semântico: "
+                    f"operador '{operator}' "
+                    f"espera um número à esquerda."
+                )
+
+            if right_type != "number":
+                raise Exception(
+                    f"Erro semântico: "
+                    f"operador '{operator}' "
+                    f"espera um número à direita."
+                )
+
+            return "boolean"
+
+        raise Exception(
+            f"Erro semântico: "
+            f"operador '{operator}' desconhecido."
         )
 
+    # ========================================================
+    # SET
+    # ========================================================
+
+    def analyze_set(self, expression):
+
+        # Analisa o valor que será atribuído
+        value_type = self.analyze_expression(
+            expression.value
+        )
+
+        # Adiciona/atualiza a variável
         self.symbol_table.define(
-            name.name,
+            expression.name,
             Symbol(
-                name.name,
+                expression.name,
                 value_type
             )
         )
 
         return value_type
 
-    def analyze_binary_operation(
-        self,
-        expression
-    ):
+    # ========================================================
+    # PRINT
+    # ========================================================
 
-        elements = expression.elements
+    def analyze_print(self, expression):
 
-        if len(elements) != 3:
-            raise Exception(
-                "Erro semântico: "
-                "operação aritmética espera "
-                "2 operandos."
+        # A expressão precisa ser válida.
+        self.analyze_expression(
+            expression.value
+        )
+
+        return "void"
+
+    # ========================================================
+    # BEGIN
+    # ========================================================
+
+    def analyze_begin(self, expression):
+
+        for statement in expression.expressions:
+
+            self.analyze_expression(
+                statement
             )
 
-        left = elements[1]
-        right = elements[2]
+        return "void"
 
-        left_type = self.analyze_expression(left)
-        right_type = self.analyze_expression(right)
+    # ========================================================
+    # IF
+    # ========================================================
 
-        if left_type != "number":
+    def analyze_if(self, expression):
+
+        condition_type = self.analyze_expression(
+            expression.condition
+        )
+
+        if condition_type != "boolean":
             raise Exception(
                 "Erro semântico: "
-                "primeiro operando deve ser numérico."
+                "a condição do 'if' "
+                "deve ser booleana."
             )
 
-        if right_type != "number":
+        self.analyze_expression(
+            expression.then_branch
+        )
+
+        self.analyze_expression(
+            expression.else_branch
+        )
+
+        return "void"
+
+    # ========================================================
+    # WHILE
+    # ========================================================
+
+    def analyze_while(self, expression):
+
+        condition_type = self.analyze_expression(
+            expression.condition
+        )
+
+        if condition_type != "boolean":
             raise Exception(
                 "Erro semântico: "
-                "segundo operando deve ser numérico."
+                "a condição do 'while' "
+                "deve ser booleana."
             )
 
-        return "number"
+        self.analyze_expression(
+            expression.body
+        )
+
+        return "void"
