@@ -43,6 +43,7 @@ class CubeElements(ThreeDScene):
 
         CanonicalCamera.setup(self)
 
+        grid = CanonicalGrid()
         cube = CanonicalCube(side_length=2)
 
         self.play(FadeIn(cube.faces))
@@ -135,3 +136,66 @@ class CubeCoordinates(ThreeDScene):
         )
 
         self.wait(2)
+        
+        
+class CubeTransformations(ThreeDScene):
+
+    def construct(self):
+
+        CanonicalCamera.setup(self)
+
+        grid = CanonicalGrid()
+        cube = CanonicalCube(side_length=2)
+
+        self.play(
+            Create(grid),
+            FadeIn(cube)
+        )
+
+        self.wait(1)
+
+        # 1. TRANSLAÇÃO
+        self.play(
+            cube.animate.shift(RIGHT * 2),
+            run_time=2
+        )
+
+        self.wait(1)
+
+        self.play(
+            cube.animate.shift(LEFT * 2),
+            run_time=2
+        )
+
+        self.wait(1)
+
+        # 2. ROTAÇÃO
+        self.play(
+            cube.animate.rotate(PI / 2, axis=UP),
+            run_time=2
+        )
+
+        self.wait(1)
+
+        self.play(
+            cube.animate.rotate(-PI / 2, axis=UP),
+            run_time=2
+        )
+
+        self.wait(1)
+
+        # 3. ESCALA
+        self.play(
+            cube.animate.scale(1.5),
+            run_time=2
+        )
+
+        self.wait(1)
+
+        self.play(
+            cube.animate.scale(1 / 1.5),
+            run_time=2
+        )
+
+        self.wait(2)
+        
