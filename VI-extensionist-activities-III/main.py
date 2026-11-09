@@ -307,6 +307,49 @@ class CubeTranslationCooordinates(ThreeDScene):
         self.add_fixed_in_frame_mobjects(labels)
 
         self.play(Write(labels))
+        
+        # ==================================================
+        # DESTAQUE DOS VÉRTICES P0 E P1
+        # ==================================================
+
+        p0_position = cube.get_vertex_position(-1, -1, -1)
+        p1_position = cube.get_vertex_position(1, 1, 1)
+
+        # Pontos
+        p0_dot = Dot3D(
+            point=p0_position,
+            radius=0.10,
+            color="#DC1A1A"
+        )
+
+        p1_dot = Dot3D(
+            point=p1_position,
+            radius=0.10,
+            color="#DC1A1A"
+        )
+
+        # Identificadores
+        p0_tag = MathTex(
+            r"P_0",
+            color="#DC1A1A"
+        ).scale(0.7)
+
+        p1_tag = MathTex(
+            r"P_1",
+            color="#DC1A1A"
+        ).scale(0.7)
+
+        # Posicionamento dos identificadores no espaço 3D
+        p0_tag.move_to(p0_position + np.array([-0.25, -0.25, -0.15]))
+        p1_tag.move_to(p1_position + np.array([0.25, 0.25, 0.15]))
+
+        # Adiciona os elementos
+        self.play(
+            FadeIn(p0_dot),
+            FadeIn(p1_dot),
+            Write(p0_tag),
+            Write(p1_tag)
+        )
 
         self.wait(1)
 
@@ -315,9 +358,11 @@ class CubeTranslationCooordinates(ThreeDScene):
         # ==================================================
 
         self.play(
-            cube.animate.shift(
-                np.array([2, 2, 2])
-            ),
+            cube.animate.shift(np.array([2, 2, 2])),
+            p0_dot.animate.shift(np.array([2, 2, 2])),
+            p1_dot.animate.shift(np.array([2, 2, 2])),
+            p0_tag.animate.shift(np.array([2, 2, 2])),
+            p1_tag.animate.shift(np.array([2, 2, 2])),
             run_time=3,
             rate_func=smooth
         )
