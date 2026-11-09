@@ -200,21 +200,119 @@ class CubeTransformations(ThreeDScene):
         self.wait(2)
         
         
-class CubeMovement(ThreeDScene):
+
+
+
+class CubeTranslationCooordinates(ThreeDScene):
 
     def construct(self):
-        
+
         CanonicalCamera.setup(self)
-        
+
         grid = CanonicalGrid()
         cube = CanonicalCube(side_length=2)
-        
+
         self.play(
             Create(grid),
             FadeIn(cube)
         )
-        
+
         self.wait(1)
+
+        # ==================================================
+        # COORDENADAS LOCAIS
+        # ==================================================
+
+        title_local = Text(
+            "Local Coordinates",
+            color="#64B5F6"
+        ).scale(0.35)
+
+        local_c = MathTex(
+            r"C=(0,\;0,\;0)",
+            color="#e6e6e6"
+        ).scale(0.65)
+
+        local_p0 = MathTex(
+            r"P_0=(-1,\;-1,\;-1)",
+            color="#e6e6e6"
+        ).scale(0.65)
+
+        local_p1 = MathTex(
+            r"P_1=(1,\;1,\;1)",
+            color="#e6e6e6"
+        ).scale(0.65)
+
+        # ==================================================
+        # COORDENADAS GLOBAIS
+        # ==================================================
+
+        title_global = Text(
+            "Global Coordinates",
+            color="#81C784"
+        ).scale(0.35)
+
+        global_c = MathTex(
+            r"C=(0,\;0,\;0)",
+            color="#e6e6e6"
+        ).scale(0.65)
+
+        global_p0 = MathTex(
+            r"P_0=(-1,\;-1,\;-1)",
+            color="#e6e6e6"
+        ).scale(0.65)
+
+        global_p1 = MathTex(
+            r"P_1=(1,\;1,\;1)",
+            color="#e6e6e6"
+        ).scale(0.65)
+
+        # ==================================================
+        # ORGANIZAÇÃO DOS RÓTULOS
+        # ==================================================
+
+        local_group = VGroup(
+            title_local,
+            local_c,
+            local_p0,
+            local_p1
+        ).arrange(
+            DOWN,
+            aligned_edge=LEFT,
+            buff=0.15
+        )
+
+        global_group = VGroup(
+            title_global,
+            global_c,
+            global_p0,
+            global_p1
+        ).arrange(
+            DOWN,
+            aligned_edge=LEFT,
+            buff=0.15
+        )
+
+        labels = VGroup(
+            local_group,
+            global_group
+        ).arrange(
+            DOWN,
+            aligned_edge=LEFT,
+            buff=0.35
+        )
+
+        labels.to_corner(UL, buff=0.4)
+
+        self.add_fixed_in_frame_mobjects(labels)
+
+        self.play(Write(labels))
+
+        self.wait(1)
+
+        # ==================================================
+        # MOVIMENTO DO CUBO
+        # ==================================================
 
         self.play(
             cube.animate.shift(
@@ -222,6 +320,64 @@ class CubeMovement(ThreeDScene):
             ),
             run_time=3,
             rate_func=smooth
+        )
+
+        # ==================================================
+        # ATUALIZAÇÃO DAS COORDENADAS GLOBAIS
+        # ==================================================
+
+        new_global_c = MathTex(
+            r"C=(2,\;2,\;2)",
+            color="#e6e6e6"
+        ).scale(0.65)
+
+        new_global_p0 = MathTex(
+            r"P_0=(1,\;1,\;1)",
+            color="#e6e6e6"
+        ).scale(0.65)
+
+        new_global_p1 = MathTex(
+            r"P_1=(3,\;3,\;3)",
+            color="#e6e6e6"
+        ).scale(0.65)
+
+        # Preserva a posição inicial de cada label
+        new_global_c.align_to(global_c, LEFT)
+        new_global_c.move_to(global_c, aligned_edge=LEFT)
+
+        new_global_p0.align_to(global_p0, LEFT)
+        new_global_p0.move_to(global_p0, aligned_edge=LEFT)
+
+        new_global_p1.align_to(global_p1, LEFT)
+        new_global_p1.move_to(global_p1, aligned_edge=LEFT)
+
+        self.add_fixed_in_frame_mobjects(
+            new_global_c,
+            new_global_p0,
+            new_global_p1
+        )
+
+        self.play(
+            ReplacementTransform(global_c, new_global_c),
+            ReplacementTransform(global_p0, new_global_p0),
+            ReplacementTransform(global_p1, new_global_p1)
+        )
+
+        # Atualiza as referências
+        global_c = new_global_c
+        global_p0 = new_global_p0
+        global_p1 = new_global_p1
+
+        self.add_fixed_in_frame_mobjects(
+            new_global_c,
+            new_global_p0,
+            new_global_p1
+        )
+
+        self.play(
+            Transform(global_c, new_global_c),
+            Transform(global_p0, new_global_p0),
+            Transform(global_p1, new_global_p1)
         )
 
         self.wait(2)
