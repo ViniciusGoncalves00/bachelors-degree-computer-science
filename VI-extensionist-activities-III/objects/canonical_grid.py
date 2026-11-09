@@ -81,7 +81,7 @@ class CanonicalGrid(VGroup):
         # Rótulos próximos à origem
         label_offset = 0.2
 
-        x_label.move_to([label_offset, -label_offset, 0])
+        x_label.move_to([-label_offset, -label_offset, 0])
         y_label.move_to([label_offset, label_offset, 0])
         z_label.move_to([0, label_offset, label_offset])
         

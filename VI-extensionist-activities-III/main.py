@@ -199,3 +199,29 @@ class CubeTransformations(ThreeDScene):
 
         self.wait(2)
         
+        
+class CubeMovement(ThreeDScene):
+
+    def construct(self):
+        
+        CanonicalCamera.setup(self)
+        
+        grid = CanonicalGrid()
+        cube = CanonicalCube(side_length=2)
+        
+        self.play(
+            Create(grid),
+            FadeIn(cube)
+        )
+        
+        self.wait(1)
+
+        self.play(
+            cube.animate.shift(
+                np.array([2, 2, 2])
+            ),
+            run_time=3,
+            rate_func=smooth
+        )
+
+        self.wait(2)
