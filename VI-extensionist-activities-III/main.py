@@ -426,3 +426,61 @@ class CubeTranslationCooordinates(ThreeDScene):
         )
 
         self.wait(2)
+
+
+
+class CubeProjection(ThreeDScene):
+
+    def construct(self):
+
+        CanonicalCamera.setup(self)
+
+        grid = CanonicalGrid()
+        cube = CanonicalCube(side_length=2)
+
+        self.play(
+            Create(grid),
+            FadeIn(cube)
+        )
+
+        self.wait(1)
+
+        # Plano de projeção XY
+        plane = Square(
+            side_length=4,
+            fill_color=BLUE,
+            fill_opacity=0.12,
+            stroke_color=BLUE,
+            stroke_width=2
+        )
+
+        plane.move_to(np.array([0, 0, -1.5]))
+
+        self.play(
+            FadeIn(plane)
+        )
+
+        self.wait(1)
+
+        # Calcula projeção
+        projection = cube.get_orthographic_projection(
+            plane_point=np.array([0., 0., -1.5]),
+            plane_normal=np.array([0., 0., 1.])
+        )
+
+        # Linhas de projeção
+        self.play(
+            Create(projection.projection_lines),
+            run_time=2
+        )
+
+        self.wait(1)
+
+        # Resultado da projeção
+        self.play(
+            Create(projection.edges),
+            FadeIn(projection.dots),
+            run_time=2
+        )
+
+        self.wait(2)

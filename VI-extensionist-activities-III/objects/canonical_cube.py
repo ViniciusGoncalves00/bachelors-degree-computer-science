@@ -271,11 +271,11 @@ class CanonicalCube(VGroup):
     # ======================================================
 
     def get_world_vertices(self):
-
+    
         return np.array([
-            self.get_matrix() @ np.append(p, 1)
+            self.get_center() + p
             for p in self.vertex_positions
-        ])[:, :3]
+        ])
 
     def get_world_bounding_box(self):
 
@@ -291,3 +291,92 @@ class CanonicalCube(VGroup):
                 np.max(vertices, axis=0)
             ) / 2
         }
+
+
+    def get_orthographic_projection(
+        self,
+        plane_point=np.array([0., 0., -1.5]),
+        plane_normal=np.array([0., 0., 1.]),
+        edge_color="#DC1A1A",
+        edge_width=3,
+        vertex_color="#DC1A1A",
+        vertex_radius=0.05,
+        show_projection_lines=True,
+        projection_line_color="#888888"
+    ):
+
+        # Normalização do vetor normal
+        normal = np.array(plane_normal, dtype=float)
+        normal = normal / np.linalg.norm(normal)
+
+        plane_point = np.array(plane_point, dtype=float)
+
+        # Vértices em coordenadas globais
+        world_vertices = self.get_world_vertices()
+
+        # Projeção ortográfica dos vértices
+        projected_vertices = []
+
+        for vertex in world_vertices:
+
+            distance = np.dot(
+                vertex - plane_point,
+                normal
+            )
+
+            projected = vertex - distance * normal
+
+            projected_vertices.append(projected)
+
+        projected_vertices = np.array(projected_vertices)
+
+        # Arestas projetadas
+        projected_edges = VGroup(*[
+            Line(
+                projected_vertices[a],
+                projected_vertices[b],
+                color=edge_color,
+                stroke_width=edge_width
+            )
+            for a, b in self.edge_indices
+        ])
+
+        # Vértices projetados
+        projected_dots = VGroup(*[
+            Dot3D(
+                point=p,
+                radius=vertex_radius,
+                color=vertex_color
+            )
+            for p in projected_vertices
+        ])
+
+        # Linhas entre vértices originais e projetados
+        projection_lines = VGroup()
+
+        if show_projection_lines:
+
+            projection_lines = VGroup(*[
+                DashedLine(
+                    start=world_vertices[i],
+                    end=projected_vertices[i],
+                    color=projection_line_color,
+                    stroke_width=1.5
+                )
+                for i in range(len(world_vertices))
+            ])
+
+        # Agrupamento
+        projection = VGroup(
+            projected_edges,
+            projected_dots,
+            projection_lines
+        )
+
+        # Dados geométricos para consultas posteriores
+        projection.vertices = projected_vertices
+        projection.edges = projected_edges
+        projection.dots = projected_dots
+        projection.projection_lines = projection_lines
+
+        return projection
