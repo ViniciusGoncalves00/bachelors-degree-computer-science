@@ -484,3 +484,158 @@ class CubeProjection(ThreeDScene):
         )
 
         self.wait(2)
+
+
+
+
+class CubePerspectiveProjection(ThreeDScene):
+
+    def construct(self):
+        CanonicalCamera.setup(self)
+
+        # Cena
+        grid = CanonicalGrid()
+        cube = CanonicalCube(side_length=2)
+
+        self.play(
+            Create(grid),
+            FadeIn(cube),
+        )
+
+        # Parâmetros da câmera
+        camera_radius = 6.0
+        camera_height = 2.5
+        plane_distance = 2.5
+        plane_size = 4.0
+
+        angle = ValueTracker(0)
+
+        # Posição do centro de projeção
+        def get_camera_position():
+            theta = angle.get_value()
+
+            return np.array([
+                camera_radius * np.cos(theta),
+                camera_radius * np.sin(theta),
+                camera_height,
+            ])
+
+        # Direção de visão da câmera
+        def get_camera_direction():
+            direction = -get_camera_position()
+            return direction / np.linalg.norm(direction)
+
+        # Centro do plano de projeção
+        def get_plane_position():
+            return (
+                get_camera_position()
+                + get_camera_direction() * plane_distance
+            )
+
+        # Orientação do plano de projeção
+        def get_plane_axes():
+            direction = get_camera_direction()
+
+            world_up = np.array([0.0, 0.0, 1.0])
+
+            right = np.cross(direction, world_up)
+            right /= np.linalg.norm(right)
+
+            up = np.cross(right, direction)
+            up /= np.linalg.norm(up)
+
+            return right, up
+
+        # Plano de projeção sempre voltado para a câmera
+        plane = always_redraw(
+            lambda: self.create_plane(
+                get_plane_position(),
+                get_plane_axes(),
+                plane_size,
+            )
+        )
+
+        # Centro de projeção
+        camera_dot = always_redraw(
+            lambda: Dot3D(
+                point=get_camera_position(),
+                radius=0.09,
+                color=YELLOW,
+            )
+        )
+
+        camera_label = always_redraw(
+            lambda: MathTex("C", color=YELLOW)
+            .scale(0.7)
+            .move_to(
+                get_camera_position()
+                + np.array([0.2, 0.2, 0.2])
+            )
+        )
+
+        # Origem do sistema de coordenadas
+        origin_dot = Dot3D(
+            point=ORIGIN,
+            radius=0.07,
+            color=GREEN,
+        )
+
+        origin_label = MathTex("O", color=GREEN)
+        origin_label.scale(0.7)
+        origin_label.move_to(np.array([-0.2, -0.2, -0.2]))
+
+        # Projeção atualizada continuamente
+        projection = always_redraw(
+            lambda: cube.get_perspective_projection(
+                camera_position=get_camera_position(),
+                plane_point=get_plane_position(),
+                plane_normal=get_camera_direction(),
+                edge_color=YELLOW,
+                edge_width=3,
+                vertex_color=RED,
+                show_projection_lines=True,
+            )
+        )
+
+        self.play(
+            FadeIn(plane),
+            FadeIn(camera_dot),
+            FadeIn(camera_label),
+            FadeIn(origin_dot),
+            FadeIn(origin_label),
+        )
+
+        self.play(
+            FadeIn(projection),
+            run_time=2,
+        )
+
+        self.wait(1)
+
+        # Movimento da câmera ao redor do cubo
+        self.play(
+            angle.animate.set_value(2 * PI),
+            run_time=12,
+            rate_func=linear,
+        )
+
+        self.wait(2)
+
+    def create_plane(self, center, axes, size):
+        right, up = axes
+        half = size / 2
+
+        corners = [
+            center - right * half - up * half,
+            center + right * half - up * half,
+            center + right * half + up * half,
+            center - right * half + up * half,
+        ]
+
+        return Polygon(
+            *corners,
+            color=BLUE,
+            fill_color=BLUE,
+            fill_opacity=0.12,
+            stroke_width=2,
+        )

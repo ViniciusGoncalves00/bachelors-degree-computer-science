@@ -380,3 +380,146 @@ class CanonicalCube(VGroup):
         projection.projection_lines = projection_lines
 
         return projection
+
+
+
+    def get_perspective_projection(
+        self,
+        camera_position=np.array([5.0, 5.0, 5.0]),
+        plane_point=np.array([0.0, 0.0, 0.0]),
+        plane_normal=np.array([0.0, 0.0, 1.0]),
+        edge_color=YELLOW,
+        edge_width=3,
+        vertex_color=RED,
+        vertex_radius=0.05,
+        show_projection_lines=True,
+        projection_line_color=GRAY,
+    ):
+        camera_position = np.array(camera_position, dtype=float)
+        plane_point = np.array(plane_point, dtype=float)
+        plane_normal = np.array(plane_normal, dtype=float)
+
+        plane_normal /= np.linalg.norm(plane_normal)
+
+        world_vertices = self.get_world_vertices()
+        projected_vertices = []
+
+        for vertex in world_vertices:
+            direction = vertex - camera_position
+
+            denominator = np.dot(direction, plane_normal)
+
+            if abs(denominator) < 1e-8:
+                raise ValueError("Raio paralelo ao plano de projeção.")
+
+            t = np.dot(plane_point - camera_position, plane_normal) / denominator
+
+            if t <= 0:
+                raise ValueError(
+                    "O plano de projeção precisa estar entre a câmera e os vértices."
+                )
+
+            projected = camera_position + t * direction
+            projected_vertices.append(projected)
+
+        projected_vertices = np.array(projected_vertices)
+
+        edges = VGroup()
+        for a, b in self.edge_indices:
+            edges.add(
+                Line(
+                    projected_vertices[a],
+                    projected_vertices[b],
+                    color=edge_color,
+                    stroke_width=edge_width,
+                )
+            )
+
+        dots = VGroup()
+        for vertex in projected_vertices:
+            dots.add(
+                Dot3D(
+                    point=vertex,
+                    radius=vertex_radius,
+                    color=vertex_color,
+                )
+            )
+
+        projection_lines = VGroup()
+        if show_projection_lines:
+            for original, projected in zip(world_vertices, projected_vertices):
+                projection_lines.add(
+                    DashedLine(
+                        camera_position,
+                        projected,
+                        color=projection_line_color,
+                        stroke_width=1.5,
+                        dash_length=0.08,
+                    )
+                )
+
+        projection = VGroup(projection_lines, edges, dots)
+        projection.vertices = projected_vertices
+        projection.edges = edges
+        projection.dots = dots
+        projection.projection_lines = projection_lines
+
+        return projection
+
+    
+    def get_screen_projection(self, projection, width=3.0, height=3.0):
+        """
+        Converte os vértices do plano de projeção em coordenadas
+        2D para exibição fixa na tela.
+        """
+    
+        vertices = projection.vertices
+    
+        # Eixos do plano de projeção
+        center = vertices.mean(axis=0)
+    
+        # Base local do plano
+        right = vertices[1] - vertices[0]
+        right /= np.linalg.norm(right)
+    
+        up = vertices[3] - vertices[0]
+        up /= np.linalg.norm(up)
+    
+        # Coordenadas locais dos vértices
+        local = np.array([
+            [
+                np.dot(vertex - center, right),
+                np.dot(vertex - center, up),
+            ]
+            for vertex in vertices
+        ])
+    
+        # Normalização para o tamanho desejado na tela
+        max_x = max(np.max(np.abs(local[:, 0])), 1e-8)
+        max_y = max(np.max(np.abs(local[:, 1])), 1e-8)
+    
+        screen_vertices = np.array([
+            [
+                (x / max_x) * width / 2,
+                (y / max_y) * height / 2,
+                0,
+            ]
+            for x, y in local
+        ])
+    
+        screen_vertices[:, 0] += 4.0
+    
+        screen_edges = VGroup()
+    
+        for a, b in self.edge_indices:
+            screen_edges.add(
+                Line(
+                    screen_vertices[a],
+                    screen_vertices[b],
+                    color=YELLOW,
+                    stroke_width=3,
+                )
+            )
+    
+        return screen_edges
+    
