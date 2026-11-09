@@ -838,3 +838,256 @@ class CubePerspectiveToScreen(ThreeDScene):
         )
 
         self.wait(3)
+
+
+
+
+class RasterizationVsRayTracing(ThreeDScene):
+
+    def construct(self):
+
+        # ==================================================
+        # CONFIGURAÇÃO DA CENA
+        # ==================================================
+
+        self.set_camera_orientation(
+            phi=70 * DEGREES,
+            theta=-90 * DEGREES,
+            gamma=0,
+        )
+
+        cube_size = 1.6
+        camera_distance = 4.5
+        plane_distance = 2.3
+        plane_size = 2.6
+
+        left_center = LEFT * 2.8
+        right_center = RIGHT * 2.8
+
+        # ==================================================
+        # TÍTULOS
+        # ==================================================
+
+        raster_title = Text(
+            "RASTERIZAÇÃO",
+            color=BLUE,
+            weight=BOLD,
+        ).scale(0.55).to_corner(UL).shift(DOWN * 0.2)
+
+        ray_title = Text(
+            "RAY TRACING",
+            color=RED,
+            weight=BOLD,
+        ).scale(0.55).to_corner(UR).shift(DOWN * 0.2)
+
+        self.add_fixed_in_frame_mobjects(
+            raster_title,
+            ray_title,
+        )
+
+        # ==================================================
+        # CUBOS
+        # ==================================================
+
+        cube_raster = CanonicalCube(
+            side_length=cube_size,
+            fill_color=BLUE,
+            fill_opacity=0.12,
+        ).shift(left_center)
+
+        cube_ray = CanonicalCube(
+            side_length=cube_size,
+            fill_color=BLUE,
+            fill_opacity=0.12,
+        ).shift(right_center)
+
+        # ==================================================
+        # CÂMERAS VIRTUAIS
+        # ==================================================
+
+        raster_camera_position = (
+            left_center + DOWN * camera_distance
+        )
+
+        ray_camera_position = (
+            right_center + DOWN * camera_distance
+        )
+
+        raster_camera = Dot3D(
+            raster_camera_position,
+            color=YELLOW,
+            radius=0.10,
+        )
+
+        ray_camera = Dot3D(
+            ray_camera_position,
+            color=YELLOW,
+            radius=0.10,
+        )
+
+        raster_camera_label = MathTex(
+            "C_1",
+            color=YELLOW,
+        ).scale(0.65).next_to(raster_camera, LEFT)
+
+        ray_camera_label = MathTex(
+            "C_2",
+            color=YELLOW,
+        ).scale(0.65).next_to(ray_camera, RIGHT)
+
+        # ==================================================
+        # PLANOS DE IMAGEM
+        # ==================================================
+
+        plane_normal = DOWN
+
+        raster_plane_center = (
+            left_center + DOWN * plane_distance
+        )
+
+        ray_plane_center = (
+            right_center + DOWN * plane_distance
+        )
+
+        def make_image_plane(center):
+
+            return Square(
+                side_length=plane_size,
+                fill_color=WHITE,
+                fill_opacity=0.08,
+                stroke_color=WHITE,
+                stroke_width=2,
+            ).rotate(
+                PI / 2,
+                axis=RIGHT,
+            ).move_to(center)
+
+        raster_plane = make_image_plane(raster_plane_center)
+        ray_plane = make_image_plane(ray_plane_center)
+
+        # ==================================================
+        # RASTERIZAÇÃO
+        # ==================================================
+
+        raster_projection = cube_raster.get_perspective_projection(
+            camera_position=raster_camera_position,
+            plane_point=raster_plane_center,
+            plane_normal=plane_normal,
+            edge_color=YELLOW,
+            edge_width=3,
+            vertex_color=RED,
+            vertex_radius=0.045,
+            show_projection_lines=True,
+            projection_line_color=GRAY,
+        )
+
+        # ==================================================
+        # RAY TRACING
+        # ==================================================
+
+        ray_group = VGroup()
+        ray_plane_points = VGroup()
+
+        half = cube_size / 2
+
+        # Pontos de amostragem na face frontal do cubo.
+        sample_coordinates = [-0.5, 0.0, 0.5]
+
+        for x in sample_coordinates:
+            for z in sample_coordinates:
+
+                target = right_center + np.array([
+                    x,
+                    -half,
+                    z,
+                ])
+
+                direction = target - ray_camera_position
+
+                denominator = np.dot(
+                    direction,
+                    plane_normal,
+                )
+
+                t = np.dot(
+                    ray_plane_center - ray_camera_position,
+                    plane_normal,
+                ) / denominator
+
+                plane_hit = (
+                    ray_camera_position + t * direction
+                )
+
+                # Raio que atravessa o plano e atinge o cubo.
+                ray_group.add(
+                    Arrow3D(
+                        start=ray_camera_position,
+                        end=target,
+                        color=RED,
+                        thickness=0.018,
+                        height=0.12,
+                        base_radius=0.025,
+                    )
+                )
+
+                # Ponto correspondente ao pixel no plano.
+                ray_plane_points.add(
+                    Dot3D(
+                        point=plane_hit,
+                        radius=0.045,
+                        color=YELLOW,
+                    )
+                )
+
+        # ==================================================
+        # APRESENTAÇÃO
+        # ==================================================
+
+        self.play(
+            FadeIn(cube_raster),
+            FadeIn(cube_ray),
+            FadeIn(raster_camera),
+            FadeIn(ray_camera),
+            FadeIn(raster_camera_label),
+            FadeIn(ray_camera_label),
+        )
+
+        self.play(
+            FadeIn(raster_plane),
+            FadeIn(ray_plane),
+        )
+
+        self.wait(1)
+
+        # Rasterização: projeção da geometria.
+        self.play(
+            Create(raster_projection.projection_lines),
+            run_time=2,
+        )
+
+        self.play(
+            Create(raster_projection.edges),
+            FadeIn(raster_projection.dots),
+            run_time=2,
+        )
+
+        self.wait(1)
+
+        # Ray tracing: emissão dos raios.
+        self.play(
+            LaggedStart(
+                *[
+                    Create(ray)
+                    for ray in ray_group
+                ],
+                lag_ratio=0.12,
+            ),
+            run_time=3,
+        )
+
+        self.play(
+            FadeIn(ray_plane_points),
+            run_time=1,
+        )
+
+        self.wait(3)
