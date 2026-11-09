@@ -639,3 +639,202 @@ class CubePerspectiveProjection(ThreeDScene):
             fill_opacity=0.12,
             stroke_width=2,
         )
+
+
+
+class CubePerspectiveToScreen(ThreeDScene):
+
+    def construct(self):
+
+        # --------------------------------------------------
+        # 1. CONFIGURAÇÃO DA CÂMERA DA CENA
+        # --------------------------------------------------
+
+        phi = 65 * DEGREES
+        theta = -45 * DEGREES
+
+        self.set_camera_orientation(
+            phi=phi,
+            theta=theta,
+            gamma=0,
+        )
+
+        # Direção da câmera da cena, conforme os ângulos
+        # utilizados na configuração acima.
+        view_direction = np.array([
+            -np.sin(phi) * np.cos(theta),
+            -np.sin(phi) * np.sin(theta),
+            -np.cos(phi),
+        ])
+
+        view_direction /= np.linalg.norm(view_direction)
+
+        # Eixos horizontais e verticais da tela.
+        world_up = np.array([0.0, 0.0, 1.0])
+
+        screen_right = np.cross(view_direction, world_up)
+        screen_right /= np.linalg.norm(screen_right)
+
+        screen_up = np.cross(screen_right, view_direction)
+        screen_up /= np.linalg.norm(screen_up)
+
+        # --------------------------------------------------
+        # 2. CUBO E REFERÊNCIAS ESPACIAIS
+        # --------------------------------------------------
+
+        grid = CanonicalGrid()
+        cube = CanonicalCube(side_length=2)
+
+        self.play(
+            Create(grid),
+            FadeIn(cube),
+        )
+
+        origin = Dot3D(
+            point=ORIGIN,
+            radius=0.07,
+            color=GREEN,
+        )
+
+        self.add(origin)
+
+        # --------------------------------------------------
+        # 3. CÂMERA VIRTUAL
+        # --------------------------------------------------
+
+        camera_distance = 8.0
+        plane_distance = 3.5
+
+        # A câmera virtual está alinhada à câmera da cena.
+        camera_position = -view_direction * camera_distance
+
+        # O plano fica entre a câmera virtual e o cubo.
+        plane_center = (
+            camera_position
+            + view_direction * plane_distance
+        )
+
+        camera_dot = Dot3D(
+            point=camera_position,
+            radius=0.10,
+            color=YELLOW,
+        )
+
+        camera_label = MathTex(
+            "C",
+            color=YELLOW,
+        ).scale(0.8)
+
+        camera_label.move_to(
+            camera_position + screen_right * 0.2 + screen_up * 0.2
+        )
+
+        # --------------------------------------------------
+        # 4. PLANO DE PROJEÇÃO
+        # --------------------------------------------------
+
+        plane_width = 4.0
+        plane_height = plane_width * config.frame_height / config.frame_width
+
+        half_w = plane_width / 2
+        half_h = plane_height / 2
+
+        plane_corners = [
+            plane_center - screen_right * half_w - screen_up * half_h,
+            plane_center + screen_right * half_w - screen_up * half_h,
+            plane_center + screen_right * half_w + screen_up * half_h,
+            plane_center - screen_right * half_w + screen_up * half_h,
+        ]
+
+        plane = Polygon(
+            *plane_corners,
+            color=BLUE,
+            fill_color=BLUE,
+            fill_opacity=0.15,
+            stroke_width=2,
+        )
+
+        # --------------------------------------------------
+        # 5. PROJEÇÃO DO CUBO
+        # --------------------------------------------------
+
+        projection = cube.get_perspective_projection(
+            camera_position=camera_position,
+            plane_point=plane_center,
+            plane_normal=view_direction,
+            edge_color=YELLOW,
+            edge_width=3,
+            vertex_color=RED,
+            vertex_radius=0.06,
+            show_projection_lines=False,
+        )
+
+        # Raios que ligam a câmera aos vértices originais.
+        world_vertices = cube.get_world_vertices()
+
+        projection_rays = VGroup()
+
+        for vertex in world_vertices:
+            projection_rays.add(
+                DashedLine(
+                    camera_position,
+                    vertex,
+                    color=GRAY,
+                    stroke_width=1.5,
+                    dash_length=0.08,
+                )
+            )
+
+        # O plano e a projeção formam um único objeto.
+        image_plane = VGroup(
+            plane,
+            projection.edges,
+            projection.dots,
+        )
+
+        # --------------------------------------------------
+        # 6. APRESENTAÇÃO DA PROJEÇÃO
+        # --------------------------------------------------
+
+        self.play(
+            FadeIn(camera_dot),
+            FadeIn(camera_label),
+            FadeIn(image_plane),
+        )
+
+        self.play(
+            Create(projection_rays),
+            run_time=3,
+        )
+
+        self.wait(2)
+
+        # --------------------------------------------------
+        # 7. TRANSIÇÃO PARA A IMAGEM NA TELA
+        # --------------------------------------------------
+
+        # Removemos os elementos que não fazem parte da imagem.
+        self.play(
+            FadeOut(cube),
+            FadeOut(grid),
+            FadeOut(origin),
+            FadeOut(camera_dot),
+            FadeOut(camera_label),
+            FadeOut(projection_rays),
+            run_time=2,
+        )
+
+        # O plano é centralizado e ampliado até ocupar a tela.
+        final_scale = (
+            config.frame_width / plane_width
+        ) * 0.95
+
+        self.play(
+            image_plane.animate
+                .move_to(ORIGIN)
+                .scale(final_scale),
+            run_time=4,
+            rate_func=smooth,
+        )
+
+        self.wait(3)
