@@ -8,7 +8,7 @@ class CanonicalCamera:
     def setup(
         scene,
         phi=60,
-        theta=-30,
+        theta=-45,
         zoom=1,
         background_color = "#1A1A1A"
     ):
