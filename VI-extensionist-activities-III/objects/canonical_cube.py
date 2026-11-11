@@ -9,7 +9,7 @@ class CanonicalCube(VGroup):
     def __init__(
         self,
         side_length=2,
-        fill_color=WHITE,
+        fill_color="#E6E6E6",
         fill_opacity=0.0,
         edge_color="#E6E6E6",
         edge_width=3,
@@ -150,7 +150,7 @@ class CanonicalCube(VGroup):
     # VÉRTICES
     # ======================================================
 
-    def get_vertices(self, color="#DC1A1A", radius=0.05):
+    def get_vertices(self, color=PURE_MAGENTA, radius=0.05):
 
         return VGroup(*[
             Dot3D(point=p, radius=radius, color=color)
@@ -169,7 +169,7 @@ class CanonicalCube(VGroup):
     # ARESTAS
     # ======================================================
 
-    def get_highlighted_edges(self, color="#DC1A1A", width=5):
+    def get_highlighted_edges(self, color=PURE_MAGENTA, width=5):
 
         return VGroup(*[
             Line(
@@ -194,7 +194,7 @@ class CanonicalCube(VGroup):
     # FACES
     # ======================================================
 
-    def get_highlighted_faces(self, color="#DC1A1A", opacity=0.2):
+    def get_highlighted_faces(self, color=PURE_MAGENTA, opacity=0.2):
 
         return VGroup(*[
             Polygon(
@@ -252,7 +252,7 @@ class CanonicalCube(VGroup):
     # ======================================================
 
     def get_center(self):
-        return self.center.copy()
+        return super().get_center()
 
     def get_dimensions(self):
         return self.dimensions.copy()
@@ -269,7 +269,7 @@ class CanonicalCube(VGroup):
     # ======================================================
     # TRANSFORMAÇÕES / COORDENADAS
     # ======================================================
-
+    
     def get_world_vertices(self):
     
         return np.array([
@@ -297,12 +297,12 @@ class CanonicalCube(VGroup):
         self,
         plane_point=np.array([0., 0., -1.5]),
         plane_normal=np.array([0., 0., 1.]),
-        edge_color="#DC1A1A",
+        edge_color="#E6E6E6",
         edge_width=3,
-        vertex_color="#DC1A1A",
+        vertex_color="#E6E6E6",
         vertex_radius=0.05,
         show_projection_lines=True,
-        projection_line_color="#888888"
+        projection_line_color="#E6E6E6"
     ):
 
         # Normalização do vetor normal
@@ -390,7 +390,7 @@ class CanonicalCube(VGroup):
         plane_normal=np.array([0.0, 0.0, 1.0]),
         edge_color=YELLOW,
         edge_width=3,
-        vertex_color=RED,
+        vertex_color="#E6E6E6",
         vertex_radius=0.05,
         show_projection_lines=True,
         projection_line_color=GRAY,
